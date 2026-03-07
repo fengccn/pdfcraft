@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { logger } from '@/lib/utils/logger';
 import { workflowTemplates } from '@/config/workflow-templates';
 import { WorkflowTemplate, SavedWorkflow } from '@/types/workflow';
+import { WorkflowHistory } from './WorkflowHistory';
+import type { WorkflowExecutionRecord } from '@/types/workflow-history';
 import {
     FileStack,
     Clock,
@@ -27,11 +30,12 @@ interface WorkflowLibraryProps {
     onDeleteWorkflow: (id: string) => void;
     onDuplicateWorkflow: (id: string) => void;
     onExportWorkflow: (workflow: SavedWorkflow) => void;
+    onLoadFromHistory?: (record: WorkflowExecutionRecord) => void;
     isCollapsed?: boolean;
     onToggleCollapse?: () => void;
 }
 
-type TabType = 'templates' | 'saved' | 'favorites';
+type TabType = 'templates' | 'saved' | 'favorites' | 'history';
 
 /**
  * Workflow Library Panel
@@ -44,6 +48,7 @@ export function WorkflowLibrary({
     onDeleteWorkflow,
     onDuplicateWorkflow,
     onExportWorkflow,
+    onLoadFromHistory,
     isCollapsed = false,
     onToggleCollapse,
 }: WorkflowLibraryProps) {
@@ -92,7 +97,7 @@ export function WorkflowLibrary({
                     return translated;
                 }
             } catch (e) {
-                console.warn(`Translation missing for template name: ${template.id}`);
+                logger.warn(`Translation missing for template name: ${template.id}`);
             }
         }
         return template.name;
@@ -109,7 +114,7 @@ export function WorkflowLibrary({
                     return translated;
                 }
             } catch (e) {
-                console.warn(`Translation missing for template description: ${template.id}`);
+                logger.warn(`Translation missing for template description: ${template.id}`);
             }
         }
         return template.description;
@@ -119,6 +124,7 @@ export function WorkflowLibrary({
         { id: 'templates' as const, label: tWorkflow('templates') || 'Templates', icon: Sparkles },
         { id: 'saved' as const, label: tWorkflow('saved') || 'Saved', icon: FolderOpen },
         { id: 'favorites' as const, label: tWorkflow('favorites') || 'Favorites', icon: Star },
+        { id: 'history' as const, label: tWorkflow('history') || 'History', icon: Clock },
     ];
 
     const templateCategories = [
@@ -391,6 +397,11 @@ export function WorkflowLibrary({
                             </div>
                         )}
                     </div>
+                )}
+
+                {/* History Tab */}
+                {activeTab === 'history' && (
+                    <WorkflowHistory onLoadFromHistory={onLoadFromHistory} />
                 )}
             </div>
         </div>

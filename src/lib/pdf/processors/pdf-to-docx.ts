@@ -152,10 +152,17 @@ export class PDFToDocxProcessor extends BasePDFProcessor {
                 const msgId = 'convert-' + Date.now();
 
                 const handleMessage = (event: MessageEvent) => {
-                    const { type, id, result, error, message } = event.data;
+                    const { type, id, result, error, message, percent } = event.data;
 
                     if (type === 'status') {
                         this.updateProgress(this.progress, message);
+                        return;
+                    }
+
+                    if (type === 'progress') {
+                        // Per-page progress from Python logging handler
+                        const progressValue = typeof percent === 'number' ? percent : this.progress;
+                        this.updateProgress(progressValue, message);
                         return;
                     }
 
@@ -212,8 +219,17 @@ export class PDFToDocxProcessor extends BasePDFProcessor {
 
         } catch (error) {
             console.error('Conversion error:', error);
-            // If worker crashed or errored, we might want to restart it next time
-            this.terminateWorker();
+
+            // Only terminate the worker if it actually crashed (e.g., OOM, WASM trap).
+            // Regular conversion errors (bad PDF, Python exception) leave the worker
+            // intact so we can reuse it without re-installing all packages.
+            const isFatalCrash = error instanceof Error && (
+                error.message.includes('Worker error:') ||
+                error.message.includes('Worker not initialized')
+            );
+            if (isFatalCrash) {
+                this.terminateWorker();
+            }
 
             return this.createErrorOutput(
                 PDFErrorCode.PROCESSING_FAILED,

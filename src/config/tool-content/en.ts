@@ -2084,6 +2084,35 @@ export const toolContentEn: Record<string, ToolContent> = {
     ],
   },
 
+  'find-and-redact': {
+    title: 'Find and Redact',
+    metaDescription: 'Search and redact text across all pages of a PDF. Batch redact sensitive information like account numbers, names, and more.',
+    keywords: ['redact pdf', 'find and redact', 'batch redact', 'remove text', 'pdf censorship', 'hide sensitive data'],
+    description: `
+      <p>Find and Redact allows you to search for specific text, numbers, or patterns across all pages of your PDF and redact all matching occurrences at once. Perfect for removing sensitive information like account numbers, names, addresses, or any confidential data.</p>
+      <p>Preview all matches before applying redactions, and selectively choose which occurrences to redact. Supports case-sensitive search, whole word matching, and regular expressions for advanced pattern matching.</p>
+      <p>All processing happens in your browser, ensuring your documents remain private and secure.</p>
+    `,
+    howToUse: [
+      { step: 1, title: 'Upload Your PDF', description: 'Drag and drop your PDF file or click to select.' },
+      { step: 2, title: 'Search for Text', description: 'Enter the text, number, or regex pattern you want to find and redact.' },
+      { step: 3, title: 'Review and Select', description: 'Preview all matches and select which ones to redact.' },
+      { step: 4, title: 'Apply Redaction', description: 'Customize redaction appearance and apply to selected matches.' },
+    ],
+    useCases: [
+      { title: 'Privacy Compliance', description: 'Redact personal information to comply with GDPR, HIPAA, or other regulations.', icon: 'shield' },
+      { title: 'Legal Documents', description: 'Remove confidential data from legal documents before sharing.', icon: 'scale' },
+      { title: 'Financial Records', description: 'Redact account numbers, SSNs, or financial data from statements.', icon: 'credit-card' },
+    ],
+    faq: [
+      { question: 'Is redaction permanent?', answer: 'Yes, redaction permanently removes the underlying text. The original content cannot be recovered. Always keep a backup of the original file.' },
+      { question: 'Can I redact images or scanned text?', answer: 'This tool works with text-based PDFs. For scanned documents, you would need to use manual area-based redaction.' },
+      { question: 'Can I customize the redaction appearance?', answer: 'Yes, you can set the redaction color, add borders, and optionally include replacement text like "[REDACTED]".' },
+      { question: 'How does regex search work?', answer: 'Enable "Use Regular Expression" to search using regex patterns. For example, \\d{4}-\\d{4}-\\d{4}-\\d{4} to find credit card numbers.' },
+    ],
+  },
+
+
   'decrypt-pdf': {
     title: 'Decrypt PDF',
     metaDescription: 'Remove password from PDF files. Unlock password-protected documents.',
@@ -2214,15 +2243,41 @@ export const toolContentEn: Record<string, ToolContent> = {
     ],
   },
 
+  'pdf-to-markdown': {
+    title: 'PDF to Markdown',
+    metaDescription: 'Convert PDF to Markdown format. Extract text and preserve formatting like headings and lists.',
+    keywords: ['pdf to markdown', 'convert pdf to md', 'pdf text extraction', 'markdown converter', 'pdf to text'],
+    description: `
+      <p>PDF to Markdown converts your PDF documents into clean, well-structured Markdown files. The tool intelligently extracts text content and attempts to preserve formatting like headings, lists, and paragraphs.</p>
+      <p>Perfect for converting PDF documents to editable formats for documentation, note-taking, or content management systems that support Markdown.</p>
+      <p>All conversion happens locally in your browser, ensuring your documents remain private and secure.</p>
+    `,
+    howToUse: [
+      { step: 1, title: 'Upload Your PDF', description: 'Drag and drop your PDF file or click to select.' },
+      { step: 2, title: 'Configure Options', description: 'Set page range, choose to include page numbers, and adjust line break settings.' },
+      { step: 3, title: 'Convert and Download', description: 'Click Convert to generate your Markdown file and download.' },
+    ],
+    useCases: [
+      { title: 'Documentation', description: 'Convert PDF manuals and guides to Markdown for version-controlled documentation.', icon: 'file-text' },
+      { title: 'Note Taking', description: 'Extract content from PDF articles and books for your note-taking system.', icon: 'edit-3' },
+      { title: 'Content Migration', description: 'Migrate PDF content to CMS platforms that support Markdown.', icon: 'copy' },
+    ],
+    faq: [
+      { question: 'Is formatting preserved?', answer: 'The tool attempts to detect headings based on font size and bullet points/numbered lists. Complex layouts may require manual adjustment.' },
+      { question: 'Can I convert specific pages?', answer: 'Yes, you can specify a page range like "1-3, 5, 7" to convert only those pages.' },
+      { question: 'Does it work with scanned PDFs?', answer: 'Scanned PDFs contain images, not text. Use our OCR tool first to extract text before converting to Markdown.' },
+    ],
+  },
+
   // ==================== NEW TOOLS ====================
   'deskew-pdf': {
     title: 'Deskew PDF',
     metaDescription: 'Automatically straighten scanned or tilted PDF pages. Fix skewed documents with precision angle detection.',
     keywords: ['deskew pdf', 'straighten pdf', 'fix tilted scan', 'auto rotate pdf', 'correct pdf angle'],
     description: `
-      <p>Deskew PDF automatically detects and corrects tilted or skewed pages in your PDF documents. This is essential for scanned documents that were fed into the scanner at an angle.</p>
-      <p>The tool uses advanced image analysis to detect the exact rotation angle of each page and corrects it to vertical alignment. You can adjust the sensitivity threshold and DPI settings for optimal results.</p>
-      <p>All processing happens locally in your browser using WebAssembly technology, ensuring your documents remain private.</p>
+      <p>Deskew PDF automatically detects and corrects tilted or skewed pages in your PDF documents using advanced projection profile variance analysis. This is essential for scanned documents that were fed into the scanner at an angle.</p>
+      <p>The tool analyzes the text and content alignment at different angles to find the optimal rotation, then applies the correction. You can adjust the sensitivity threshold (1-30) and DPI settings (72-300) for optimal results.</p>
+      <p>All processing happens locally in your browser using WebAssembly technology, ensuring your documents remain private and secure.</p>
     `,
     howToUse: [
       { step: 1, title: 'Upload Your PDF', description: 'Drag and drop your scanned PDF file or click to select.' },
@@ -2235,9 +2290,11 @@ export const toolContentEn: Record<string, ToolContent> = {
       { title: 'Archive Restoration', description: 'Straighten old scanned archives for better readability.', icon: 'archive' },
     ],
     faq: [
-      { question: 'How accurate is the angle detection?', answer: 'The tool can detect and correct angles as small as 0.1 degrees for precise alignment.' },
-      { question: 'Will text quality be affected?', answer: 'The deskewing process maintains text quality while rotating the page content.' },
-      { question: 'Can I deskew specific pages only?', answer: 'The tool processes all pages but only corrects those detected as skewed.' },
+      { question: 'How accurate is the angle detection?', answer: 'The tool uses projection profile variance analysis to detect skew angles up to ±10 degrees with high accuracy. It automatically skips pages with angles less than 0.3 degrees.' },
+      { question: 'Will text quality be affected?', answer: 'For rotations at multiples of 90 degrees, no quality loss occurs. For other angles, the tool rounds to the nearest degree and maintains good quality.' },
+      { question: 'Can I deskew specific pages only?', answer: 'The tool analyzes all pages but only corrects those with detected skew above the sensitivity threshold. Pages with minimal skew are left unchanged.' },
+      { question: 'What is the sensitivity threshold?', answer: 'Values 1-10 correct obvious tilts only, 11-20 detect moderate skew, and 21-30 catch subtle angles. Default is 10 for balanced detection.' },
+      { question: 'How long does processing take?', answer: 'Processing time depends on file size and DPI. 150 DPI (default) provides good balance between speed and accuracy. Higher DPI is more accurate but slower.' },
     ],
   },
 
@@ -2321,27 +2378,29 @@ export const toolContentEn: Record<string, ToolContent> = {
 
   'email-to-pdf': {
     title: 'Email to PDF',
-    metaDescription: 'Convert email files (.eml) to PDF documents. Preserve formatting, inline images, and attachments.',
-    keywords: ['email to pdf', 'eml to pdf', 'convert email', 'email converter', 'save email as pdf'],
+    metaDescription: 'Convert email files (.eml, .msg) to PDF documents. Preserve formatting, inline images, clickable links, and embed attachments.',
+    keywords: ['email to pdf', 'eml to pdf', 'msg to pdf', 'convert email', 'email converter', 'save email as pdf', 'outlook to pdf'],
     description: `
-      <p>Email to PDF converts your email files (.eml format) into well-formatted PDF documents. The tool preserves the email header information, body content, inline images, and attachment listings.</p>
-      <p>Customize output options including page size, date formatting, and whether to include CC/BCC fields and attachment information.</p>
-      <p>All conversion happens locally in your browser, ensuring your emails remain private.</p>
+      <p>Email to PDF converts your email files (.eml and .msg formats) into well-formatted PDF documents. The tool preserves the email header information, body content, inline images with CID replacement, clickable links, and embeds attachments directly into the PDF.</p>
+      <p>Customize output options including page size (A4, Letter, Legal), date formatting with timezone support, and whether to include CC/BCC fields and attachment information.</p>
+      <p>All conversion happens locally in your browser, ensuring your emails remain private and secure.</p>
     `,
     howToUse: [
-      { step: 1, title: 'Upload Email File', description: 'Upload your .eml email file.' },
-      { step: 2, title: 'Configure Options', description: 'Set page size and choose which fields to include.' },
-      { step: 3, title: 'Convert and Download', description: 'Convert to PDF and download the result.' },
+      { step: 1, title: 'Upload Email File', description: 'Upload your .eml or .msg email file.' },
+      { step: 2, title: 'Configure Options', description: 'Set page size, date format, timezone, and choose which fields to include.' },
+      { step: 3, title: 'Convert and Download', description: 'Convert to PDF with embedded attachments and download the result.' },
     ],
     useCases: [
-      { title: 'Legal Records', description: 'Archive important emails as PDF for legal documentation.', icon: 'scale' },
-      { title: 'Business Archives', description: 'Convert business correspondence to PDF for record keeping.', icon: 'briefcase' },
-      { title: 'Evidence Preservation', description: 'Save email evidence in a non-editable PDF format.', icon: 'shield' },
+      { title: 'Legal Records', description: 'Archive important emails as PDF with embedded attachments for legal documentation.', icon: 'scale' },
+      { title: 'Business Archives', description: 'Convert business correspondence to PDF for long-term record keeping.', icon: 'briefcase' },
+      { title: 'Evidence Preservation', description: 'Save email evidence with inline images and attachments in a non-editable PDF format.', icon: 'shield' },
     ],
     faq: [
-      { question: 'What email formats are supported?', answer: 'Currently .eml files are fully supported. MSG file support is coming soon.' },
-      { question: 'Are attachments included?', answer: 'Attachment names are listed in the PDF. The actual files are not embedded.' },
-      { question: 'Is the email formatting preserved?', answer: 'Yes, HTML emails maintain their formatting as closely as possible.' },
+      { question: 'What email formats are supported?', answer: 'Both .eml (RFC 822) and .msg (Microsoft Outlook) files are fully supported.' },
+      { question: 'Are attachments included?', answer: 'Yes! Attachments are embedded directly into the PDF file. You can extract them from the PDF using a compatible PDF reader.' },
+      { question: 'Are inline images displayed?', answer: 'Yes, inline images referenced via CID (Content-ID) are automatically converted to base64 data URIs and displayed in the PDF.' },
+      { question: 'Are links clickable?', answer: 'Yes, all HTML links (<a> tags) and URLs in plain text emails are converted to clickable links in the PDF.' },
+      { question: 'Is the email formatting preserved?', answer: 'Yes, HTML emails maintain their formatting as closely as possible, including styles, images, and links.' },
     ],
   },
 
@@ -2399,27 +2458,30 @@ export const toolContentEn: Record<string, ToolContent> = {
 
   'font-to-outline': {
     title: 'Font to Outline',
-    metaDescription: 'Convert PDF fonts to vector outlines. Ensure compatibility when fonts may be unavailable.',
-    keywords: ['font to outline', 'outline fonts', 'convert fonts', 'vector text', 'font compatibility'],
+    metaDescription: 'Remove font dependencies from PDF documents by converting pages to high-quality images. Ensures compatibility across all systems.',
+    keywords: ['font to outline', 'outline fonts', 'remove fonts', 'font compatibility', 'flatten pdf fonts', 'pdf font removal'],
     description: `
-      <p>Font to Outline converts all text in your PDF to vector paths (outlines). This ensures your document looks exactly the same on any system, even if the original fonts are not installed.</p>
-      <p>This is essential for print preparation, ensuring graphics display correctly, and avoiding font licensing issues when sharing documents.</p>
-      <p>All processing happens locally in your browser, ensuring your documents remain private.</p>
+      <p>Font to Outline removes all font dependencies from your PDF by converting each page into high-quality rasterized content. This ensures your document looks exactly the same on any system, even if the original fonts are not installed.</p>
+      <p>The tool renders each page at your chosen DPI (150-600), removing embedded fonts while preserving the exact visual appearance. Optionally, you can add an invisible text layer to maintain searchability.</p>
+      <p>This is essential for print preparation, cross-platform compatibility, and avoiding font licensing issues when sharing documents. All processing happens locally in your browser.</p>
     `,
     howToUse: [
-      { step: 1, title: 'Upload Your PDF', description: 'Upload the PDF containing fonts you want to convert.' },
-      { step: 2, title: 'Configure Options', description: 'Set DPI for rasterization if needed for complex fonts.' },
-      { step: 3, title: 'Convert and Download', description: 'Convert fonts to outlines and download the result.' },
+      { step: 1, title: 'Upload Your PDF', description: 'Upload the PDF containing fonts you want to remove.' },
+      { step: 2, title: 'Configure Quality', description: 'Choose DPI (300 recommended for print, 150 for screen). Enable searchable text if needed.' },
+      { step: 3, title: 'Convert and Download', description: 'Process the file and download the font-independent PDF.' },
     ],
     useCases: [
-      { title: 'Print Preparation', description: 'Ensure fonts display correctly at commercial printers.', icon: 'printer' },
-      { title: 'Cross-Platform Sharing', description: 'Share documents that look identical on any device.', icon: 'share-2' },
-      { title: 'Font Licensing', description: 'Remove font embedding to avoid licensing concerns.', icon: 'shield' },
+      { title: 'Print Preparation', description: 'Eliminate font issues at commercial printers by removing all font dependencies.', icon: 'printer' },
+      { title: 'Cross-Platform Sharing', description: 'Share documents that look identical on any device, regardless of installed fonts.', icon: 'share-2' },
+      { title: 'Font Licensing', description: 'Remove embedded fonts to avoid licensing concerns when distributing documents.', icon: 'shield' },
     ],
     faq: [
-      { question: 'Can I still select text after conversion?', answer: 'No, outlined text becomes vector graphics and is no longer searchable or selectable.' },
-      { question: 'Will file size increase?', answer: 'File size may increase as vectors can be larger than font data, especially for complex fonts.' },
-      { question: 'Is this reversible?', answer: 'No, keep a backup of the original if you need editable text.' },
+      { question: 'How does this work?', answer: 'The tool renders each page at high resolution (your chosen DPI) and recreates the PDF from these images, removing all font dependencies while preserving visual appearance.' },
+      { question: 'Can I still select text after conversion?', answer: 'By default, no. Text becomes part of the image. However, you can enable "Preserve searchable text" to add an invisible text layer for search and copy functionality.' },
+      { question: 'What DPI should I use?', answer: '300 DPI is recommended for print-quality output. 150 DPI is sufficient for screen viewing and produces smaller files. 600 DPI is for highest quality but creates large files.' },
+      { question: 'Will file size increase?', answer: 'File size depends on DPI and content. 150 DPI usually produces smaller files, 300 DPI may increase size, 600 DPI significantly increases size. Compression is automatically applied.' },
+      { question: 'Is this reversible?', answer: 'No, font data is permanently removed. Keep a backup of the original if you need editable text with the original fonts.' },
+      { question: 'What about vector graphics?', answer: 'Vector graphics (shapes, lines) in the original PDF will be converted to raster along with text. The visual quality is preserved at your chosen DPI.' },
     ],
   },
 
@@ -2500,6 +2562,60 @@ export const toolContentEn: Record<string, ToolContent> = {
       { question: 'Is my document secure?', answer: 'Yes, your document is processed entirely in your browser and is never uploaded to any server.' },
       { question: 'Can I annotate or edit the PDF?', answer: 'This tool is for viewing only. Use our Sign PDF or Annotate PDF tools for editing.' },
       { question: 'Does it work on mobile devices?', answer: 'Yes, the PDF Reader works on all devices with a modern web browser.' },
+    ],
+  },
+
+  'digital-sign-pdf': {
+    title: 'Digital Signature',
+    metaDescription: 'Add X.509 digital signatures to PDF documents. Sign PDFs with PFX, P12, or PEM certificates for legal validity.',
+    keywords: ['digital signature pdf', 'x509 certificate', 'pfx sign pdf', 'p12 sign pdf', 'pem sign pdf', 'legally sign pdf'],
+    description: `
+      <p>Digital Signature allows you to add cryptographic X.509 digital signatures to PDF documents. Unlike simple drawn signatures, digital signatures provide legal validity and document integrity verification.</p>
+      <p>Upload your certificate file (PFX, P12, or PEM format), enter the password, and sign your PDF. You can add visible signatures with custom text, images, and positioning, or invisible signatures for document integrity only.</p>
+      <p>All signing happens locally in your browser. Your certificate and documents are never uploaded to any server.</p>
+    `,
+    howToUse: [
+      { step: 1, title: 'Upload PDF', description: 'Upload the PDF document you want to digitally sign.' },
+      { step: 2, title: 'Load Certificate', description: 'Upload your X.509 certificate file (.pfx, .p12, or .pem) and enter the password.' },
+      { step: 3, title: 'Configure Signature', description: 'Optionally add reason, location, and visible signature with custom text or image.' },
+      { step: 4, title: 'Sign and Download', description: 'Click Sign PDF to apply the digital signature and download the signed document.' },
+    ],
+    useCases: [
+      { title: 'Legal Documents', description: 'Sign contracts, agreements, and legal documents with legally binding digital signatures.', icon: 'scale' },
+      { title: 'Business Approvals', description: 'Digitally sign invoices, purchase orders, and approval documents for audit trails.', icon: 'briefcase' },
+      { title: 'Document Integrity', description: 'Ensure documents have not been tampered with after signing.', icon: 'shield-check' },
+    ],
+    faq: [
+      { question: 'What certificate formats are supported?', answer: 'PFX (.pfx), PKCS#12 (.p12), and PEM (.pem) certificate formats are supported.' },
+      { question: 'Is the signature legally valid?', answer: 'Yes, X.509 digital signatures are legally recognized in most jurisdictions when using a valid certificate.' },
+      { question: 'Can I add a visible signature?', answer: 'Yes, you can add a visible signature with custom text, image, position, and styling.' },
+    ],
+  },
+
+  'validate-signature': {
+    title: 'Validate Signature',
+    metaDescription: 'Verify digital signatures in PDF documents. Check certificate validity, signer information, and document integrity.',
+    keywords: ['validate pdf signature', 'verify digital signature', 'check pdf certificate', 'signature verification'],
+    description: `
+      <p>Validate Signature allows you to verify digital signatures in PDF documents. Check if signatures are valid, view certificate information, and confirm document integrity.</p>
+      <p>Upload a signed PDF to see all signatures, their validity status, signer information, and whether the document has been modified after signing.</p>
+      <p>All validation happens locally in your browser. Your documents are never uploaded to any server.</p>
+    `,
+    howToUse: [
+      { step: 1, title: 'Upload Signed PDF', description: 'Upload a PDF document that contains digital signatures.' },
+      { step: 2, title: 'View Results', description: 'See all signatures found in the document with their validity status.' },
+      { step: 3, title: 'Check Details', description: 'View certificate information, signer details, and signing timestamp.' },
+      { step: 4, title: 'Export Report', description: 'Optionally download a JSON report of the validation results.' },
+    ],
+    useCases: [
+      { title: 'Document Verification', description: 'Verify that signed documents are authentic and have not been tampered with.', icon: 'shield-check' },
+      { title: 'Compliance Audit', description: 'Check signature validity for compliance and audit purposes.', icon: 'clipboard-check' },
+      { title: 'Certificate Review', description: 'View certificate details and expiration dates for signed documents.', icon: 'award' },
+    ],
+    faq: [
+      { question: 'What does "valid" mean?', answer: 'A valid signature means the document has not been modified since signing and the certificate chain is intact.' },
+      { question: 'Can I validate multiple PDFs?', answer: 'Yes, you can upload multiple PDFs and validate all signatures in batch.' },
+      { question: 'Why might a signature be invalid?', answer: 'Signatures may be invalid if the document was modified, the certificate expired, or the certificate is not trusted.' },
     ],
   },
 };

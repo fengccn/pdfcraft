@@ -4,13 +4,6 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Cropper, { ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import * as pdfjsLib from 'pdfjs-dist';
-import { configurePdfjsWorker } from '@/lib/pdf/loader';
-
-// Set worker source
-if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  configurePdfjsWorker(pdfjsLib);
-}
 
 import { FileUploader } from '../FileUploader';
 import { ProcessingProgress, ProcessingStatus } from '../ProcessingProgress';
@@ -53,6 +46,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
   const [applyToAll, setApplyToAll] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(1); // Track actual zoom ratio
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [pageInputValue, setPageInputValue] = useState('1'); // For page jump input
 
   const cropperRef = useRef<ReactCropperElement>(null);
   const cropperContainerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +55,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
   // Fullscreen toggle
   const handleToggleFullscreen = useCallback(() => {
     if (!cropperContainerRef.current) return;
-    
+
     if (!isFullscreen) {
       // Enter fullscreen
       if (cropperContainerRef.current.requestFullscreen) {
@@ -156,6 +150,15 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
     setStatus('idle');
 
     try {
+      // Dynamic import to avoid SSR issues with Promise.withResolvers
+      const pdfjsLib = await import('pdfjs-dist');
+      const { configurePdfjsWorker } = await import('@/lib/pdf/loader');
+
+      // Configure worker (only happens once, loader checks internally)
+      if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        configurePdfjsWorker(pdfjsLib);
+      }
+
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
 
@@ -167,6 +170,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
         pdfDoc,
         crops: {},
       }));
+      setPageInputValue('1');
 
       // Render first page
       renderPage(pdfDoc, 1);
@@ -239,7 +243,42 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
 
     const newPage = state.currentPage + delta;
     if (newPage >= 1 && newPage <= state.numPages) {
+      setPageInputValue(String(newPage));
       await renderPage(state.pdfDoc, newPage);
+    }
+  };
+
+  // Jump to specific page
+  const goToPage = async (pageNum: number) => {
+    if (!state.pdfDoc) return;
+    const targetPage = Math.max(1, Math.min(pageNum, state.numPages));
+    if (targetPage === state.currentPage) {
+      setPageInputValue(String(targetPage));
+      return;
+    }
+    saveCurrentCrop();
+    setPageInputValue(String(targetPage));
+    await renderPage(state.pdfDoc, targetPage);
+  };
+
+  // Handle page input submission
+  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const num = parseInt(pageInputValue, 10);
+      if (!isNaN(num)) {
+        goToPage(num);
+      } else {
+        setPageInputValue(String(state.currentPage));
+      }
+    }
+  };
+
+  const handlePageInputBlur = () => {
+    const num = parseInt(pageInputValue, 10);
+    if (!isNaN(num)) {
+      goToPage(num);
+    } else {
+      setPageInputValue(String(state.currentPage));
     }
   };
 
@@ -328,7 +367,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
     if (cropper) {
       // Reset zoom level when new image loads
       setCurrentZoom(1);
-      
+
       if (state.crops[state.currentPage]) {
         const saved = state.crops[state.currentPage];
         const imageData = cropper.getImageData();
@@ -392,9 +431,9 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
 
           {/* Visual Cropper */}
           <Card variant="outlined" className="p-0 overflow-hidden bg-gray-100">
-            <div 
+            <div
               ref={cropperContainerRef}
-              className={`relative ${isFullscreen ? 'bg-gray-900 flex flex-col' : ''}`} 
+              className={`relative ${isFullscreen ? 'bg-gray-900 flex flex-col' : ''}`}
               style={{ minHeight: isFullscreen ? '100vh' : '400px' }}
             >
               {state.pageImage ? (
@@ -407,7 +446,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                   ready={onCropperReady}
                   viewMode={1}
                   background={false}
-                  autoCropArea={0.8}
+                  autoCropArea={1}
                   zoomOnWheel={false}
                 />
               ) : (
@@ -415,7 +454,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                   <span className="text-gray-400">Loading page...</span>
                 </div>
               )}
-              
+
               {/* Zoom Controls - positioned at bottom center of cropper */}
               {state.pageImage && (
                 <div className={`${isFullscreen ? 'fixed' : 'absolute'} left-1/2 bottom-4 -translate-x-1/2 z-10 flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full shadow-lg px-4 py-2 border border-gray-200`}>
@@ -430,11 +469,11 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
                     </svg>
                   </button>
-                  
+
                   <span className="px-2 text-sm font-medium text-gray-600 min-w-[60px] text-center">
                     {Math.round(currentZoom * 100)}%
                   </span>
-                  
+
                   <button
                     type="button"
                     onClick={handleResetZoom}
@@ -444,7 +483,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                   >
                     {tTools('cropPdf.reset') || 'Reset'}
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={handleZoomIn}
@@ -456,9 +495,9 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
                     </svg>
                   </button>
-                  
+
                   <div className="w-px h-6 bg-gray-300 mx-1"></div>
-                  
+
                   <button
                     type="button"
                     onClick={handleToggleFullscreen}
@@ -477,7 +516,7 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                   </button>
                 </div>
               )}
-              
+
               {/* Fullscreen page navigation */}
               {isFullscreen && state.pageImage && (
                 <div className="fixed top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-full shadow-lg px-4 py-2 border border-gray-200">
@@ -491,9 +530,19 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <span className="text-sm font-medium text-gray-600 min-w-[80px] text-center">
-                    {state.currentPage} / {state.numPages}
-                  </span>
+                  <div className="flex items-center gap-1 text-sm font-medium text-gray-600">
+                    <input
+                      type="text"
+                      value={pageInputValue}
+                      onChange={(e) => setPageInputValue(e.target.value)}
+                      onKeyDown={handlePageInputKeyDown}
+                      onBlur={handlePageInputBlur}
+                      disabled={isProcessing}
+                      className="w-12 text-center border border-gray-300 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      aria-label="Go to page"
+                    />
+                    <span>/ {state.numPages}</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => changePage(1)}
@@ -516,19 +565,36 @@ export function CropPDFTool({ className = '' }: CropPDFToolProps) {
                   size="sm"
                   onClick={() => changePage(-1)}
                   disabled={state.currentPage <= 1 || isProcessing}
+                  aria-label="Previous page"
                 >
-                  Previous
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </Button>
-                <span className="text-sm font-medium w-24 text-center">
-                  Page {state.currentPage} of {state.numPages}
-                </span>
+                <div className="flex items-center gap-1 text-sm font-medium min-w-[120px] justify-center">
+                  <span>{tTools('cropPdf.page') || 'Page'}</span>
+                  <input
+                    type="text"
+                    value={pageInputValue}
+                    onChange={(e) => setPageInputValue(e.target.value)}
+                    onKeyDown={handlePageInputKeyDown}
+                    onBlur={handlePageInputBlur}
+                    disabled={isProcessing}
+                    className="w-14 text-center border border-gray-300 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    aria-label="Go to page"
+                  />
+                  <span>/ {state.numPages}</span>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => changePage(1)}
                   disabled={state.currentPage >= state.numPages || isProcessing}
+                  aria-label="Next page"
                 >
-                  Next
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Button>
               </div>
 

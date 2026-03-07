@@ -679,6 +679,18 @@ export const tools: Tool[] = [
     features: ['extract-tables', 'multiple-sheets', 'preserve-data'],
     relatedTools: ['pdf-to-json', 'pdf-to-docx', 'ocr-pdf'],
   },
+  {
+    id: 'pdf-to-markdown',
+    slug: 'pdf-to-markdown',
+    icon: 'file-code-2',
+    category: 'convert-from-pdf',
+    acceptedFormats: ['.pdf'],
+    outputFormat: 'md',
+    maxFileSize: DEFAULT_MAX_FILE_SIZE,
+    maxFiles: 1,
+    features: ['extract-text', 'preserve-headings', 'detect-lists', 'page-range'],
+    relatedTools: ['pdf-to-json', 'pdf-to-docx', 'ocr-pdf'],
+  },
 
 
   // ==================== ORGANIZE & MANAGE ====================
@@ -997,7 +1009,19 @@ export const tools: Tool[] = [
     maxFileSize: DEFAULT_MAX_FILE_SIZE,
     maxFiles: 1,
     features: ['remove-metadata', 'remove-annotations', 'remove-scripts', 'remove-attachments'],
-    relatedTools: ['remove-metadata', 'flatten-pdf', 'remove-annotations'],
+    relatedTools: ['remove-metadata', 'flatten-pdf', 'find-and-redact'],
+  },
+  {
+    id: 'find-and-redact',
+    slug: 'find-and-redact',
+    icon: 'search-x',
+    category: 'secure-pdf',
+    acceptedFormats: ['.pdf'],
+    outputFormat: 'pdf',
+    maxFileSize: DEFAULT_MAX_FILE_SIZE,
+    maxFiles: 1,
+    features: ['search-text', 'batch-redact', 'regex-search', 'selective-redact', 'preview-matches'],
+    relatedTools: ['sanitize-pdf', 'edit-pdf', 'remove-metadata'],
   },
   {
     id: 'decrypt-pdf',
@@ -1047,6 +1071,30 @@ export const tools: Tool[] = [
     features: ['print-permission', 'copy-permission', 'edit-permission', 'annotation-permission'],
     relatedTools: ['encrypt-pdf', 'decrypt-pdf', 'remove-restrictions'],
   },
+  {
+    id: 'digital-sign-pdf',
+    slug: 'digital-sign-pdf',
+    icon: 'file-key',
+    category: 'secure-pdf',
+    acceptedFormats: ['.pdf'],
+    outputFormat: 'pdf',
+    maxFileSize: DEFAULT_MAX_FILE_SIZE,
+    maxFiles: 1,
+    features: ['x509-certificate', 'pfx-p12-pem', 'visible-signature', 'signature-reason', 'timestamp'],
+    relatedTools: ['validate-signature', 'encrypt-pdf', 'sign-pdf'],
+  },
+  {
+    id: 'validate-signature',
+    slug: 'validate-signature',
+    icon: 'shield-check',
+    category: 'secure-pdf',
+    acceptedFormats: ['.pdf'],
+    outputFormat: 'json',
+    maxFileSize: DEFAULT_MAX_FILE_SIZE,
+    maxFiles: 10,
+    features: ['verify-signatures', 'certificate-info', 'integrity-check', 'batch-validation'],
+    relatedTools: ['digital-sign-pdf', 'view-metadata', 'decrypt-pdf'],
+  },
 
   // ==================== NEW TOOLS ====================
   {
@@ -1082,7 +1130,7 @@ export const tools: Tool[] = [
     outputFormat: 'image',
     maxFileSize: DEFAULT_MAX_FILE_SIZE,
     maxFiles: 10,
-    features: ['dpi-control', 'png-jpeg-webp', 'page-range', 'batch-export'],
+    features: ['dpi-control', 'png-jpeg-webp-pdf', 'page-range', 'batch-export'],
     relatedTools: ['pdf-to-jpg', 'pdf-to-png', 'extract-images'],
   },
   {

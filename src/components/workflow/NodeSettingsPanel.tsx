@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale, useMessages } from 'next-intl';
 import { WorkflowNode } from '@/types/workflow';
 import { getToolContent } from '@/config/tool-content';
 import { Locale } from '@/lib/i18n/config';
@@ -14,18 +14,23 @@ interface NodeSettingsPanelProps {
     onUpdateSettings: (nodeId: string, settings: Record<string, unknown>) => void;
 }
 
-type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'range' | 'color';
+type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'range' | 'color' | 'file' | 'password';
 
 interface FieldConfig {
     key: string;
     labelKey: string;
     type: FieldType;
     defaultValue: unknown;
-    options?: { value: string; labelKey: string }[];
+    options?: { value: string; labelKey: string; descriptionKey?: string }[];
     min?: number;
     max?: number;
     step?: number;
     placeholderKey?: string;
+    descriptionKey?: string;
+    /** Show this field only when another field has a specific value */
+    showWhen?: { field: string; value: unknown };
+    /** Accepted file types for 'file' type fields */
+    accept?: string;
 }
 
 interface ToolSettingsConfig {
@@ -42,6 +47,17 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
         titleKey: 'compressPdf.optionsTitle',
         fields: [
             {
+                key: 'algorithm',
+                labelKey: 'compressPdf.algorithmLabel',
+                type: 'select',
+                defaultValue: 'standard',
+                options: [
+                    { value: 'standard', labelKey: 'compressPdf.algorithmStandard', descriptionKey: 'compressPdf.algorithmStandardDesc' },
+                    { value: 'condense', labelKey: 'compressPdf.algorithmCondense', descriptionKey: 'compressPdf.algorithmCondenseDesc' },
+                    { value: 'photon', labelKey: 'compressPdf.algorithmPhoton', descriptionKey: 'compressPdf.algorithmPhotonDesc' },
+                ],
+            },
+            {
                 key: 'quality',
                 labelKey: 'compressPdf.qualityLabel',
                 type: 'select',
@@ -54,10 +70,25 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
                 ],
             },
             {
+                key: 'photonDpi',
+                labelKey: 'compressPdf.photonDpiLabel',
+                type: 'select',
+                defaultValue: '150',
+                descriptionKey: 'compressPdf.photonDpiDesc',
+                showWhen: { field: 'algorithm', value: 'photon' },
+                options: [
+                    { value: '72', labelKey: '72 DPI' },
+                    { value: '150', labelKey: '150 DPI' },
+                    { value: '200', labelKey: '200 DPI' },
+                    { value: '300', labelKey: '300 DPI' },
+                ],
+            },
+            {
                 key: 'optimizeImages',
                 labelKey: 'compressPdf.optimizeImages',
                 type: 'checkbox',
                 defaultValue: true,
+                showWhen: { field: 'algorithm', value: 'standard' },
             },
             {
                 key: 'removeMetadata',
@@ -90,10 +121,24 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
                 placeholderKey: 'watermark.textPlaceholder',
             },
             {
+                key: 'position',
+                labelKey: 'watermark.position',
+                type: 'select',
+                defaultValue: 'center',
+                options: [
+                    { value: 'center', labelKey: 'watermark.posCenter' },
+                    { value: 'diagonal', labelKey: 'watermark.posDiagonal' },
+                    { value: 'top-left', labelKey: 'watermark.posTopLeft' },
+                    { value: 'top-right', labelKey: 'watermark.posTopRight' },
+                    { value: 'bottom-left', labelKey: 'watermark.posBottomLeft' },
+                    { value: 'bottom-right', labelKey: 'watermark.posBottomRight' },
+                ],
+            },
+            {
                 key: 'fontSize',
                 labelKey: 'watermark.fontSize',
                 type: 'number',
-                defaultValue: 72,
+                defaultValue: 48,
                 min: 10,
                 max: 200,
             },
@@ -228,6 +273,13 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
                 min: 1,
                 max: 100,
             },
+            {
+                key: 'pageRanges',
+                labelKey: 'splitPdf.pageRanges',
+                type: 'text',
+                defaultValue: '',
+                placeholderKey: 'splitPdf.pageRangesPlaceholder',
+            },
         ],
     },
 
@@ -321,7 +373,7 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
 
     // ==================== Encrypt PDF ====================
     'encrypt-pdf': {
-        titleKey: 'encryptPdf.optionsTitle',
+        titleKey: 'encryptPdf.permissionsTitle',
         fields: [
             {
                 key: 'userPassword',
@@ -339,25 +391,25 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
             },
             {
                 key: 'allowPrinting',
-                labelKey: 'encryptPdf.allowPrinting',
+                labelKey: 'encryptPdf.permPrinting',
                 type: 'checkbox',
                 defaultValue: true,
             },
             {
                 key: 'allowModifying',
-                labelKey: 'encryptPdf.allowModifying',
+                labelKey: 'encryptPdf.permModifying',
                 type: 'checkbox',
                 defaultValue: false,
             },
             {
                 key: 'allowCopying',
-                labelKey: 'encryptPdf.allowCopying',
+                labelKey: 'encryptPdf.permCopying',
                 type: 'checkbox',
                 defaultValue: false,
             },
             {
                 key: 'allowAnnotating',
-                labelKey: 'encryptPdf.allowAnnotating',
+                labelKey: 'encryptPdf.permAnnotating',
                 type: 'checkbox',
                 defaultValue: true,
             },
@@ -374,6 +426,48 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
                 type: 'text',
                 defaultValue: '',
                 placeholderKey: 'decryptPdf.passwordPlaceholder',
+            },
+        ],
+    },
+
+    // ==================== Digital Sign PDF ====================
+    'digital-sign-pdf': {
+        titleKey: 'digitalSign.signatureOptionsTitle',
+        fields: [
+            {
+                key: 'certFile',
+                labelKey: 'digitalSign.uploadCertificateLabel',
+                type: 'file',
+                defaultValue: null,
+                accept: '.pfx,.p12,.pem',
+            },
+            {
+                key: 'certPassword',
+                labelKey: 'digitalSign.certificatePasswordLabel',
+                type: 'password',
+                defaultValue: '',
+                placeholderKey: 'digitalSign.enterPassword',
+            },
+            {
+                key: 'reason',
+                labelKey: 'digitalSign.reasonLabel',
+                type: 'text',
+                defaultValue: '',
+                placeholderKey: 'digitalSign.reasonPlaceholder',
+            },
+            {
+                key: 'location',
+                labelKey: 'digitalSign.locationLabel',
+                type: 'text',
+                defaultValue: '',
+                placeholderKey: 'digitalSign.locationPlaceholder',
+            },
+            {
+                key: 'contactInfo',
+                labelKey: 'digitalSign.contactInfoLabel',
+                type: 'text',
+                defaultValue: '',
+                placeholderKey: 'digitalSign.contactInfoPlaceholder',
             },
         ],
     },
@@ -665,7 +759,7 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
 
     // ==================== Header Footer ====================
     'header-footer': {
-        titleKey: 'headerFooter.optionsTitle',
+        titleKey: 'headerFooter.headerTitle',
         fields: [
             {
                 key: 'headerText',
@@ -719,13 +813,33 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
     // ==================== PDF to Word ====================
     'pdf-to-docx': {
         titleKey: 'pdfToDocx.optionsTitle',
-        fields: [],
+        fields: [
+            {
+                key: 'preserveFormatting',
+                labelKey: 'pdfToDocx.preserveFormatting',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+            {
+                key: 'extractImages',
+                labelKey: 'pdfToDocx.extractImages',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+        ],
     },
 
     // ==================== PDF to Excel ====================
     'pdf-to-excel': {
         titleKey: 'pdfToExcel.optionsTitle',
-        fields: [],
+        fields: [
+            {
+                key: 'detectTables',
+                labelKey: 'pdfToExcel.detectTables',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+        ],
     },
 
     // ==================== PDF to PowerPoint ====================
@@ -1353,6 +1467,14 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
                 ],
             },
             {
+                key: 'count',
+                labelKey: 'addBlankPage.countLabel',
+                type: 'number',
+                defaultValue: 1,
+                min: 1,
+                max: 100,
+            },
+            {
                 key: 'pageSize',
                 labelKey: 'addBlankPage.pageSize',
                 type: 'select',
@@ -1692,25 +1814,25 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
         fields: [
             {
                 key: 'allowPrinting',
-                labelKey: 'encryptPdf.allowPrinting',
+                labelKey: 'changePermissions.allowPrinting',
                 type: 'checkbox',
                 defaultValue: true,
             },
             {
                 key: 'allowCopying',
-                labelKey: 'encryptPdf.allowCopying',
+                labelKey: 'changePermissions.allowCopying',
                 type: 'checkbox',
                 defaultValue: false,
             },
             {
                 key: 'allowModifying',
-                labelKey: 'encryptPdf.allowModifying',
+                labelKey: 'changePermissions.allowModifying',
                 type: 'checkbox',
                 defaultValue: false,
             },
             {
                 key: 'allowAnnotating',
-                labelKey: 'encryptPdf.allowAnnotating',
+                labelKey: 'changePermissions.allowAnnotating',
                 type: 'checkbox',
                 defaultValue: true,
             },
@@ -1818,7 +1940,26 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
     },
     'pdf-to-zip': {
         titleKey: 'pdfToZip.optionsTitle',
-        fields: [],
+        fields: [
+            {
+                key: 'filename',
+                labelKey: 'pdfToZip.filename',
+                type: 'text',
+                defaultValue: 'pdfs.zip',
+                placeholderKey: 'pdfToZip.filenamePlaceholder',
+            },
+            {
+                key: 'compressionLevel',
+                labelKey: 'pdfToZip.compressionLevel',
+                type: 'select',
+                defaultValue: '6',
+                options: [
+                    { value: '1', labelKey: 'pdfToZip.compressionFast' },
+                    { value: '6', labelKey: 'pdfToZip.compressionNormal' },
+                    { value: '9', labelKey: 'pdfToZip.compressionMax' },
+                ],
+            },
+        ],
     },
     'edit-pdf': {
         titleKey: 'editPdf.optionsTitle',
@@ -1920,6 +2061,226 @@ const getToolSettingsConfig = (): Record<string, ToolSettingsConfig> => ({
             },
         ],
     },
+
+    // ==================== Missing tools with settings ====================
+    'deskew-pdf': {
+        titleKey: 'deskewPdf.optionsTitle',
+        fields: [
+            {
+                key: 'threshold',
+                labelKey: 'deskewPdf.thresholdLabel',
+                type: 'number',
+                defaultValue: 10,
+                min: 1,
+                max: 45,
+            },
+            {
+                key: 'dpi',
+                labelKey: 'deskewPdf.dpiLabel',
+                type: 'select',
+                defaultValue: '150',
+                options: [
+                    { value: '72', labelKey: '72 DPI' },
+                    { value: '150', labelKey: '150 DPI' },
+                    { value: '300', labelKey: '300 DPI' },
+                ],
+            },
+        ],
+    },
+    'email-to-pdf': {
+        titleKey: 'emailToPdf.optionsTitle',
+        fields: [
+            {
+                key: 'pageSize',
+                labelKey: 'emailToPdf.pageSizeLabel',
+                type: 'select',
+                defaultValue: 'a4',
+                options: [
+                    { value: 'a4', labelKey: 'A4' },
+                    { value: 'letter', labelKey: 'Letter' },
+                    { value: 'legal', labelKey: 'Legal' },
+                ],
+            },
+            {
+                key: 'includeCcBcc',
+                labelKey: 'emailToPdf.includeCcBccLabel',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+            {
+                key: 'embedAttachments',
+                labelKey: 'emailToPdf.embedAttachments',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+            {
+                key: 'includeAttachmentsList',
+                labelKey: 'emailToPdf.includeAttachmentsLabel',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+        ],
+    },
+    'font-to-outline': {
+        titleKey: 'fontToOutline.optionsTitle',
+        fields: [
+            {
+                key: 'dpi',
+                labelKey: 'fontToOutline.dpiLabel',
+                type: 'select',
+                defaultValue: '300',
+                options: [
+                    { value: '150', labelKey: '150 DPI' },
+                    { value: '300', labelKey: '300 DPI' },
+                    { value: '600', labelKey: '600 DPI' },
+                ],
+            },
+            {
+                key: 'preserveSelectableText',
+                labelKey: 'fontToOutline.preserveSelectableText',
+                type: 'checkbox',
+                defaultValue: false,
+            },
+            {
+                key: 'pageRange',
+                labelKey: 'fontToOutline.pageRange',
+                type: 'text',
+                defaultValue: '',
+                placeholderKey: 'extractPages.pageRangePlaceholder',
+            },
+        ],
+    },
+    'pdf-booklet': {
+        titleKey: 'pdfBooklet.optionsTitle',
+        fields: [
+            {
+                key: 'pageSize',
+                labelKey: 'pdfBooklet.paperSizeLabel',
+                type: 'select',
+                defaultValue: 'A4',
+                options: [
+                    { value: 'A4', labelKey: 'A4' },
+                    { value: 'LETTER', labelKey: 'Letter' },
+                    { value: 'LEGAL', labelKey: 'Legal' },
+                ],
+            },
+            {
+                key: 'bindingEdge',
+                labelKey: 'pdfBooklet.bindingEdge',
+                type: 'select',
+                defaultValue: 'left',
+                options: [
+                    { value: 'left', labelKey: 'pdfBooklet.bindingLeft' },
+                    { value: 'right', labelKey: 'pdfBooklet.bindingRight' },
+                ],
+            },
+        ],
+    },
+    'rasterize-pdf': {
+        titleKey: 'rasterizePdf.optionsTitle',
+        fields: [
+            {
+                key: 'dpi',
+                labelKey: 'rasterizePdf.dpiLabel',
+                type: 'select',
+                defaultValue: '150',
+                options: [
+                    { value: '72', labelKey: '72 DPI' },
+                    { value: '150', labelKey: '150 DPI' },
+                    { value: '300', labelKey: '300 DPI' },
+                    { value: '600', labelKey: '600 DPI' },
+                ],
+            },
+            {
+                key: 'imageFormat',
+                labelKey: 'rasterizePdf.formatLabel',
+                type: 'select',
+                defaultValue: 'jpeg',
+                options: [
+                    { value: 'jpeg', labelKey: 'JPEG' },
+                    { value: 'png', labelKey: 'PNG' },
+                ],
+            },
+        ],
+    },
+    'markdown-to-pdf': {
+        titleKey: 'markdownToPdf.optionsTitle',
+        fields: [
+            {
+                key: 'fontSize',
+                labelKey: 'markdownToPdf.fontSize',
+                type: 'number',
+                defaultValue: 12,
+                min: 8,
+                max: 24,
+            },
+            {
+                key: 'pageSize',
+                labelKey: 'markdownToPdf.pageSizeLabel',
+                type: 'select',
+                defaultValue: 'A4',
+                options: [
+                    { value: 'A4', labelKey: 'A4' },
+                    { value: 'LETTER', labelKey: 'Letter' },
+                    { value: 'LEGAL', labelKey: 'Legal' },
+                ],
+            },
+        ],
+    },
+    'extract-tables': {
+        titleKey: 'extractTables.optionsTitle',
+        fields: [
+            {
+                key: 'outputFormat',
+                labelKey: 'extractTables.formatLabel',
+                type: 'select',
+                defaultValue: 'csv',
+                options: [
+                    { value: 'csv', labelKey: 'CSV' },
+                    { value: 'json', labelKey: 'JSON' },
+                    { value: 'excel', labelKey: 'Excel' },
+                ],
+            },
+        ],
+    },
+    'pdf-to-pdfa': {
+        titleKey: 'pdfToPdfa.optionsTitle',
+        fields: [
+            {
+                key: 'conformanceLevel',
+                labelKey: 'pdfToPdfa.levelLabel',
+                type: 'select',
+                defaultValue: 'A-2b',
+                options: [
+                    { value: 'A-1b', labelKey: 'PDF/A-1b' },
+                    { value: 'A-2b', labelKey: 'PDF/A-2b' },
+                    { value: 'A-3b', labelKey: 'PDF/A-3b' },
+                ],
+            },
+        ],
+    },
+    'cbz-to-pdf': {
+        titleKey: 'cbzToPdf.optionsTitle',
+        fields: [
+            {
+                key: 'pageSize',
+                labelKey: 'cbzToPdf.pageSizeLabel',
+                type: 'select',
+                defaultValue: 'A4',
+                options: [
+                    { value: 'A4', labelKey: 'A4' },
+                    { value: 'LETTER', labelKey: 'Letter' },
+                    { value: 'LEGAL', labelKey: 'Legal' },
+                ],
+            },
+            {
+                key: 'fitToPage',
+                labelKey: 'cbzToPdf.preserveAspectLabel',
+                type: 'checkbox',
+                defaultValue: true,
+            },
+        ],
+    },
 });
 
 /**
@@ -1929,6 +2290,8 @@ export function NodeSettingsPanel({ node, onClose, onUpdateSettings }: NodeSetti
     const t = useTranslations('tools');
     const tWorkflow = useTranslations('workflow');
     const tCommon = useTranslations('common');
+    const tRoot = useTranslations(); // Root level translations for tool-specific settings
+    const messages = useMessages(); // Get raw messages for nested key lookup
     const locale = useLocale() as Locale;
 
     const [settings, setSettings] = useState<Record<string, unknown>>({});
@@ -1946,27 +2309,112 @@ export function NodeSettingsPanel({ node, onClose, onUpdateSettings }: NodeSetti
     };
 
     const getTranslation = (key: string, fallback?: string): string => {
-        try {
-            // Handle common namespace keys
-            if (key.startsWith('common.')) {
-                const commonKey = key.replace('common.', '');
-                // tCommon uses 'common' namespace, so we just need the sub-key
+        // If the key doesn't contain a dot, it might be a literal value (like 'A4', 'PNG', 'Letter')
+        // These are not translation keys, just direct values to display
+        if (!key.includes('.')) {
+            // Return the key directly as it's likely a literal value
+            return fallback || key;
+        }
+
+        // Handle common namespace keys
+        if (key.startsWith('common.')) {
+            const commonKey = key.replace('common.', '');
+            try {
                 const result = tCommon(commonKey);
-                if (result && typeof result === 'string' && !result.includes('MISSING') && result !== commonKey) {
+                if (result && typeof result === 'string' && !result.startsWith('MISSING') && result !== commonKey) {
                     return result;
+                }
+            } catch {
+                // Continue
+            }
+        }
+
+        // Try tools namespace with explicit path navigation for nested keys
+        try {
+            // For keys like "watermark.optionsTitle", try to access nested structure
+            const parts = key.split('.');
+            if (parts.length > 1) {
+                // Try to get the raw object and navigate using messages from useMessages()
+                try {
+                    // Access the tools namespace from messages
+                    const toolsMessages = messages?.tools as Record<string, unknown> | undefined;
+                    if (toolsMessages && typeof toolsMessages === 'object') {
+                        let value: unknown = toolsMessages;
+                        for (const part of parts) {
+                            value = (value as Record<string, unknown>)?.[part];
+                        }
+                        if (value && typeof value === 'string') {
+                            return value;
+                        }
+                    }
+                } catch {
+                    // Continue to simple lookup
                 }
             }
 
-            // Try tools namespace
-            const result = t.has(key) ? t(key) : null;
-            if (result && typeof result === 'string' && !result.includes('MISSING')) {
-                return result;
+            // Try simple lookup - with existence check to avoid console errors
+            try {
+                // Check if the key exists in the current namespace (tools)
+                const toolsMessages = messages?.tools as Record<string, unknown> | undefined;
+                let exists = false;
+                if (toolsMessages && typeof toolsMessages === 'object') {
+                    let current: any = toolsMessages;
+                    const parts = key.split('.');
+                    for (const part of parts) {
+                        if (current && typeof current === 'object' && part in current) {
+                            current = current[part];
+                            exists = true;
+                        } else {
+                            exists = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (exists) {
+                    const result = t(key);
+                    if (result && typeof result === 'string' && result !== key && !result.startsWith('MISSING')) {
+                        return result;
+                    }
+                }
+            } catch {
+                // Continue to root level
             }
-            // Return fallback or extract last part of key as readable label
-            return fallback || key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
         } catch {
-            return fallback || key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
+            // Continue to root level
         }
+
+        // Try root level translations
+        try {
+            // Existence check for rootResult
+            let exists = false;
+            if (messages && typeof messages === 'object') {
+                let current: any = messages;
+                const parts = key.split('.');
+                for (const part of parts) {
+                    if (current && typeof current === 'object' && part in current) {
+                        current = current[part];
+                        exists = true;
+                    } else {
+                        exists = false;
+                        break;
+                    }
+                }
+            }
+
+            if (exists) {
+                const rootResult = tRoot(key);
+                if (rootResult && typeof rootResult === 'string' && rootResult !== key && !rootResult.startsWith('MISSING')) {
+                    return rootResult;
+                }
+            }
+        } catch {
+            // Continue to fallback
+        }
+
+        // Return fallback or extract last part of key as readable label
+        const extracted = key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
+        return fallback || extracted;
     };
 
     useEffect(() => {
@@ -2036,11 +2484,24 @@ export function NodeSettingsPanel({ node, onClose, onUpdateSettings }: NodeSetti
                             {getTranslation(config.titleKey, 'Settings')}
                         </p>
 
-                        {config.fields.map(field => (
+                        {config.fields.map(field => {
+                            // Check showWhen condition
+                            if (field.showWhen) {
+                                const depValue = settings[field.showWhen.field];
+                                if (depValue !== field.showWhen.value) return null;
+                            }
+
+                            return (
                             <div key={field.key} className="space-y-1.5">
                                 <label className="block text-sm font-medium text-[hsl(var(--color-foreground))]">
                                     {getTranslation(field.labelKey)}
                                 </label>
+
+                                {field.descriptionKey && (
+                                    <p className="text-xs text-[hsl(var(--color-muted-foreground))]">
+                                        {getTranslation(field.descriptionKey)}
+                                    </p>
+                                )}
 
                                 {field.type === 'text' && (
                                     <input
@@ -2065,6 +2526,7 @@ export function NodeSettingsPanel({ node, onClose, onUpdateSettings }: NodeSetti
                                 )}
 
                                 {field.type === 'select' && (
+                                    <>
                                     <select
                                         value={(settings[field.key] as string) || ''}
                                         onChange={(e) => handleFieldChange(field.key, e.target.value)}
@@ -2076,6 +2538,15 @@ export function NodeSettingsPanel({ node, onClose, onUpdateSettings }: NodeSetti
                                             </option>
                                         ))}
                                     </select>
+                                    {(() => {
+                                        const selectedOpt = field.options?.find(o => o.value === (settings[field.key] as string));
+                                        return selectedOpt?.descriptionKey ? (
+                                            <p className="text-xs text-[hsl(var(--color-muted-foreground))] mt-1">
+                                                {getTranslation(selectedOpt.descriptionKey)}
+                                            </p>
+                                        ) : null;
+                                    })()}
+                                    </>
                                 )}
 
                                 {field.type === 'checkbox' && (
@@ -2129,8 +2600,38 @@ export function NodeSettingsPanel({ node, onClose, onUpdateSettings }: NodeSetti
                                         />
                                     </div>
                                 )}
+
+                                {field.type === 'file' && (
+                                    <div className="space-y-1">
+                                        <input
+                                            type="file"
+                                            accept={field.accept}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0] || null;
+                                                handleFieldChange(field.key, file);
+                                            }}
+                                            className="w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[hsl(var(--color-primary))] file:text-[hsl(var(--color-primary-foreground))] hover:file:opacity-90 cursor-pointer"
+                                        />
+                                        {settings[field.key] instanceof File && (
+                                            <p className="text-xs text-[hsl(var(--color-muted-foreground))]">
+                                                {(settings[field.key] as File).name}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {field.type === 'password' && (
+                                    <input
+                                        type="password"
+                                        value={(settings[field.key] as string) || ''}
+                                        onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                                        placeholder={field.placeholderKey ? getTranslation(field.placeholderKey) : undefined}
+                                        className="w-full px-3 py-2 text-sm rounded-md border border-[hsl(var(--color-border))] bg-[hsl(var(--color-background))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--color-primary))] placeholder:text-[hsl(var(--color-muted-foreground))]"
+                                    />
+                                )}
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
