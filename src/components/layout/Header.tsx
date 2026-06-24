@@ -377,6 +377,23 @@ export const Header: React.FC<HeaderProps> = ({ locale, showSearch = true }) => 
               <div className="h-9 w-9" />
             )}
 
+            {/* ==================== 🌐 你的专属 Logo 及博客超链接 ==================== */}
+            <a
+              href="https://apply_hierarchy_preference_link_from_history"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center h-9 w-9 rounded-lg overflow-hidden border border-[hsl(var(--color-border))/0.3] hover:border-[hsl(var(--color-primary))/0.6] hover:bg-[hsl(var(--color-muted))/0.5] transition-all group"
+              title="访问 军爸的博客"
+              aria-label="访问 军爸的博客"
+            >
+              <img 
+                src="https://fengc-img.880200.xyz/api/rfile/logo.png" 
+                alt="Logo" 
+                className="h-6 w-6 object-contain transition-transform duration-300 group-hover:scale-110"
+                loading="lazy"
+              />
+            </a>
+
             {/* Language Selector placeholder */}
             <div id="language-selector-slot" />
 
