@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'PDFCraft - Professional PDF Tools',
@@ -23,6 +24,20 @@ export default function RootLayout({
       <head>
         <meta name="color-scheme" content="light dark" />
         <style dangerouslySetInnerHTML={{ __html: 'html{scrollbar-gutter:stable}' }} />
+        
+        {/* 终极原生暗黑模式守护脚本（放在 head 最顶层执行，拒绝白色闪烁） */}
+        <Script id="theme-guard" strategy="beforeInteractive">
+          {`
+            (function() {
+              var savedTheme = localStorage.getItem('theme');
+              if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+              }
+            })();
+          `}
+        </Script>
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         {children}
