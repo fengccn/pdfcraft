@@ -38,6 +38,29 @@ export default function RootLayout({
             })();
           `}
         </Script>
+
+        {/* 🚀 专属广告代码（安全注入） */}
+        <Script id="native-ads" strategy="afterInteractive">
+          {`
+            (function(s){
+              s.dataset.zone='10755376';
+              s.src='https://nap5k.com/tag.min.js';
+            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+          `}
+        </Script>
+
+        {/* 📊 51.la 统计高级集成（智能回调，拒绝报错挂起） */}
+        <Script
+          id="LA_COLLECT"
+          src="//sdk.51.la/js-sdk-pro.min.js"
+          charSet="UTF-8"
+          strategy="afterInteractive"
+          onLoad={() => {
+            if (typeof window !== 'undefined' && (window as any).LA) {
+              (window as any).LA.init({ id: "3Oxjsmhr3Yr7aTlh", ck: "3Oxjsmhr3Yr7aTlh" });
+            }
+          }}
+        />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         {children}
