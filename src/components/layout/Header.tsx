@@ -196,30 +196,37 @@ export const Header: React.FC<HeaderProps> = ({ locale, showSearch = true }) => 
       role="banner"
     >
       <div className="container mx-auto px-4">
-        <div className="flex h-20 items-center justify-between">
-          {/* Logo and Brand */}
-          <div className="flex items-center gap-2">
+        <div className="flex h-24 items-center justify-between">
+          {/* ==================== 🌐 统一的上方居中 Logo 品牌区 ==================== */}
+          <div className="flex items-center gap-4">
+            {/* 你的专属 Logo 超链接（移至左侧品牌区内部，居中排列） */}
+            <a
+              href="https://fengcblog.880200.xyz/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center p-1 rounded-xl transition-all group"
+              title="访问 军爸的博客"
+              aria-label="访问 军爸的博客"
+            >
+              <img 
+                src="https://fengc-img.880200.xyz/api/rfile/logo.png" 
+                alt="Logo" 
+                className="h-11 w-11 object-contain transition-transform duration-300 group-hover:scale-110"
+                loading="lazy"
+              />
+            </a>
+
+            {/* 原项目的文字品牌链接 */}
             <Link
               href={`/${locale}`}
-              className="group flex items-center gap-2.5 text-xl font-bold text-[hsl(var(--color-foreground))] hover:opacity-90 transition-opacity"
+              className="flex flex-col justify-center text-[hsl(var(--color-foreground))] hover:opacity-90 transition-opacity"
               aria-label={`${t('brand')} - ${t('navigation.home')}`}
             >
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[hsl(var(--color-primary))] to-[hsl(var(--color-accent))] shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
-                <svg
-                  className="h-5 w-5 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-              </div>
-              <span className="text-xl tracking-tight" data-testid="brand-name">
+              <span className="text-xl font-bold tracking-tight" data-testid="brand-name">
                 {t('brand')}
+              </span>
+              <span className="text-xs text-[hsl(var(--color-muted-foreground))] tracking-wider mt-0.5">
+                专业PDF工具
               </span>
             </Link>
           </div>
@@ -351,7 +358,7 @@ export const Header: React.FC<HeaderProps> = ({ locale, showSearch = true }) => 
               <Github className="h-5 w-5" aria-hidden="true" />
             </a>
 
-            {/* ==================== 🛠️ 纯手工原生 SVG 暗黑模式切换按钮 ==================== */}
+            {/* ==================== 🛠️ 原生 SVG 暗黑模式切换按钮 ==================== */}
             {mounted ? (
               <button
                 onClick={toggleTheme}
@@ -376,23 +383,6 @@ export const Header: React.FC<HeaderProps> = ({ locale, showSearch = true }) => 
               /* 组件未挂载时留空占位，避免水合差异 */
               <div className="h-9 w-9" />
             )}
-
-            {/* ==================== 🌐 你的专属 Logo 及博客超链接 ==================== */}
-            <a
-              href="https://apply_hierarchy_preference_link_from_history"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center h-9 w-9 rounded-lg overflow-hidden border border-[hsl(var(--color-border))/0.3] hover:border-[hsl(var(--color-primary))/0.6] hover:bg-[hsl(var(--color-muted))/0.5] transition-all group"
-              title="访问 军爸的博客"
-              aria-label="访问 军爸的博客"
-            >
-              <img 
-                src="https://fengc-img.880200.xyz/api/rfile/logo.png" 
-                alt="Logo" 
-                className="h-6 w-6 object-contain transition-transform duration-300 group-hover:scale-110"
-                loading="lazy"
-              />
-            </a>
 
             {/* Language Selector placeholder */}
             <div id="language-selector-slot" />
