@@ -205,8 +205,8 @@ export const Header: React.FC<HeaderProps> = ({ locale, showSearch = true }) => 
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-col items-center justify-center p-1 rounded-xl transition-all group"
-              title="访问 军爸的博客"
-              aria-label="访问 军爸的博客"
+              title="访问 fengc's Blog"
+              aria-label="访问 fengc's Blog"
             >
               <img 
                 src="https://fengc-img.880200.xyz/api/rfile/logo.png" 
