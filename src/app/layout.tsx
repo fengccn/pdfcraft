@@ -44,15 +44,17 @@ export default function RootLayout({
           })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))
         `}} />
 
-        {/* 3. 51.la 统计代码 */}
-        <script charSet="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js" async></script>
-        <script dangerouslySetInnerHTML={{ __html: `
-          setTimeout(function() {
-            if (window.LA) {
-              LA.init({id:"3Oxjsmhr3Yr7aTlh",ck:"3Oxjsmhr3Yr7aTlh"});
-            }
-          }, 500);
-        `}} />
+        {/* 3. 百度 统计代码 */}
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?9136025be492cef1d1bab22524d4952d";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         {children}
