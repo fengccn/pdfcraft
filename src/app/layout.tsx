@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
-  },
+  }, 
 };
 
 // Root layout - provides the basic HTML structure
