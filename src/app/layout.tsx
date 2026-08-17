@@ -44,16 +44,9 @@ export default function RootLayout({
           })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))
         `}} />
 
-        {/* 3. 百度统计代码（已修复编译报错问题） */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          var _hmt = _hmt || [];
-          (function() {
-            var hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?9136025be492cef1d1bab22524d4952d";
-            var s = document.getElementsByTagName("script")[0]; 
-            s.parentNode.insertBefore(hm, s);
-          })();
-        `}} />
+        {/* 3. Ustat 统计代码 */}
+        <script async src="https://01a00ecb-df80-73a8-84a0-f08023e92b27.spst2.com/ustat.js"></script>
+注意事
 
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
