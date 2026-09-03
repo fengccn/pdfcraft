@@ -37,7 +37,12 @@ export default function RootLayout({
           })();
         `}} />
 
- 
+       {/* 2. 专属广告代码 */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(s){
+            s.dataset.zone='10755376',s.src='https://nap5k.com/tag.min.js'
+          })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))
+        `}} />  
 
         {/* 3. Ustat 统计代码 */}
         <script async src="https://01a00ecb-df80-73a8-84a0-f08023e92b27.spst2.com/ustat.js"></script>
