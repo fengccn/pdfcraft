@@ -45,8 +45,8 @@ export default function RootLayout({
         `}} />  
 
         {/* 3. Ustat 统计代码 */}
-        <script async src="https://01a00ecb-df80-73a8-84a0-f08023e92b27.spst2.com/ustat.js"></script>
-注意事
+        <script defer src="https://umami.880200.xyz/script.js" data-website-id="f2029f23-d480-40af-9048-3e99f3531fe6"></script>
+
 
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
